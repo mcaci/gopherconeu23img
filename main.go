@@ -20,15 +20,15 @@ import (
 )
 
 func main() {
+	l := flag.Int("l", 0, "Length of the image")
+	h := flag.Int("h", 0, "Height of the image")
+	imageName := flag.String("o", "examples/text.png", "name of the output image")
 	bgColorHex := flag.String("bgHex", "0x4d3178", "Hexadecimal value for the background color")
-	l := flag.Int("l", 1333, "Length of the image")
-	h := flag.Int("h", 300, "Height of the image")
 	fgColorHex := flag.String("fgHex", "0xabc", "Hexadecimal value for the background color")
 	fontPath := flag.String("fontPath", "/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf", "path for the font to use")
 	fontSize := flag.Float64("fontSize", 32.0, "font size of the output text in the image")
 	xPtFactor := flag.Float64("xPtFactor", 0.5, "x size factor of one letter box")
 	yPtFactor := flag.Float64("yPtFactor", 1.0, "y size factor of one letter box")
-	imageName := flag.String("o", "examples/text.png", "name of the output image")
 	figlet := flag.String("figlet", "banner", "name of the figlet font; see https://github.com/common-nighthawk/go-figure/tree/master/fonts for the values and http://www.figlet.org/examples.html for the actual effect")
 	isgif := flag.Bool("gif", false, "if true it's a gif, else it's a picture")
 	flag.Parse()
@@ -37,53 +37,62 @@ func main() {
 
 	switch *isgif {
 	case true:
-		var images []*image.Paletted
-		d := 70
-		for i := 0; i < len(asciiArtLines[0])-d+1; i++ {
-			log.Print(i)
-			img, err := setupBG(*bgColorHex, *l, *h)
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = drawFGText(asciiArtLines, i, i+d, img, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
-			if err != nil {
-				log.Fatal(err)
-			}
-			images = append(images, img)
-		}
-
-		f, _ := os.Create(*imageName)
-		defer f.Close()
-		delays := make([]int, len(images))
-		for i := range delays {
-			delays[i] = 5
-		}
-		err := gif.EncodeAll(f, &gif.GIF{
-			Image: images,
-			Delay: delays,
-		})
-		if err != nil {
-			log.Fatal(err)
-		}
+		makeGif(asciiArtLines, *l, *h, *imageName, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
 	default:
-		img, err := setupBG(*bgColorHex, *l, *h)
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = drawFGText(asciiArtLines, 0, 0, img, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
-		if err != nil {
-			log.Fatal(err)
-		}
+		makePng(asciiArtLines, *l, *h, *imageName, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+	}
+}
 
-		f, err := os.Create(*imageName)
+func makeGif(asciiArtLines []string, l, h int, imageName, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) {
+	l, h = imgBounds(asciiArtLines, fontSize, xPtFactor, yPtFactor, l, h)
+	var images []*image.Paletted
+	d := 170
+	for i := 0; i < maxLineLen(asciiArtLines)-d+1; i++ {
+		img, err := setupBG(bgColorHex, l/2, h)
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer f.Close()
-
-		if err := png.Encode(f, img); err != nil {
+		err = drawFGText(asciiArtLines, i, i+d, img, fgColorHex, fontPath, fontSize, xPtFactor, yPtFactor)
+		if err != nil {
 			log.Fatal(err)
 		}
+		images = append(images, img)
+	}
+
+	f, _ := os.Create(imageName)
+	defer f.Close()
+	delays := make([]int, len(images))
+	for i := range delays {
+		delays[i] = 5
+	}
+	err := gif.EncodeAll(f, &gif.GIF{
+		Image: images,
+		Delay: delays,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func makePng(asciiArtLines []string, l, h int, imageName, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) {
+	l, h = imgBounds(asciiArtLines, fontSize, xPtFactor, yPtFactor, l, h)
+	img, err := setupBG(bgColorHex, l, h)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = drawFGText(asciiArtLines, 0, 0, img, fgColorHex, fontPath, fontSize, xPtFactor, yPtFactor)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	f, err := os.Create(imageName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	if err := png.Encode(f, img); err != nil {
+		log.Fatal(err)
 	}
 }
 
@@ -105,6 +114,26 @@ func parseHexColor(hex string) (color.RGBA, error) {
 	default:
 		return color.RGBA{}, fmt.Errorf("invalid length, must be 8 or 5")
 	}
+}
+
+func imgBounds(asciiArtLines []string, fontSize, xPtFactor, yPtFactor float64, l, h int) (int, int) {
+	if l != 0 && h != 0 {
+		return l, h
+	}
+	l = maxLineLen(asciiArtLines)*int(fontSize*xPtFactor) + 2*10 // +offset
+	h = len(asciiArtLines)*int(fontSize*yPtFactor) + 2*30        // +offset
+	return l, h
+}
+
+func maxLineLen(asciiArtLines []string) int {
+	var maxLineLen int
+	for i := range asciiArtLines {
+		if maxLineLen >= len(asciiArtLines[i]) {
+			continue
+		}
+		maxLineLen = len(asciiArtLines[i])
+	}
+	return maxLineLen
 }
 
 func prepareText(msg, figlet string) []string {
@@ -163,15 +192,18 @@ func drawFGText(lines []string, s, e int, bg draw.Image, fgHex, fontPath string,
 	textYOffset := 30 + int(c.PointToFixed(fontSize)>>6) // Note shift/truncate 6 bits first
 
 	pt := freetype.Pt(textXOffset, textYOffset)
-	log.Print(s, e, len(lines[0]))
 	for _, line := range lines {
 		startX := pt.X
-		l := line
 		if s < e {
-			l = line[s:e]
+			switch {
+			case e < len(line):
+				line = line[s:e]
+			default:
+				line = line[s:]
+			}
 		}
-		log.Print(l)
-		for _, char := range l {
+		log.Print(line)
+		for _, char := range line {
 			_, err := c.DrawString(strings.Replace(string(char), "\r", " ", -1), pt)
 			if err != nil {
 				return err
