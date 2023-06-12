@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"image/color/palette"
 	"image/draw"
+	"image/gif"
 	"image/png"
 	"log"
 	"os"
@@ -19,7 +21,7 @@ import (
 
 func main() {
 	bgColorHex := flag.String("bgHex", "0x4d3178", "Hexadecimal value for the background color")
-	l := flag.Int("l", 2400, "Length of the image")
+	l := flag.Int("l", 1333, "Length of the image")
 	h := flag.Int("h", 300, "Height of the image")
 	fgColorHex := flag.String("fgHex", "0xabc", "Hexadecimal value for the background color")
 	fontPath := flag.String("fontPath", "/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf", "path for the font to use")
@@ -28,28 +30,60 @@ func main() {
 	yPtFactor := flag.Float64("yPtFactor", 1.0, "y size factor of one letter box")
 	imageName := flag.String("o", "examples/text.png", "name of the output image")
 	figlet := flag.String("figlet", "banner", "name of the figlet font; see https://github.com/common-nighthawk/go-figure/tree/master/fonts for the values and http://www.figlet.org/examples.html for the actual effect")
+	isgif := flag.Bool("gif", false, "if true it's a gif, else it's a picture")
 	flag.Parse()
 
 	asciiArtLines := prepareText(strings.Join(flag.Args(), " "), *figlet)
 
-	img, err := setupBG(*bgColorHex, *l, *h)
-	if err != nil {
-		log.Fatal(err)
-	}
+	switch *isgif {
+	case true:
+		var images []*image.Paletted
+		d := 70
+		for i := 0; i < len(asciiArtLines[0])-d+1; i++ {
+			log.Print(i)
+			img, err := setupBG(*bgColorHex, *l, *h)
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = drawFGText(asciiArtLines, i, i+d, img, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+			if err != nil {
+				log.Fatal(err)
+			}
+			images = append(images, img)
+		}
 
-	err = drawFGText(asciiArtLines, img, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
-	if err != nil {
-		log.Fatal(err)
-	}
+		f, _ := os.Create(*imageName)
+		defer f.Close()
+		delays := make([]int, len(images))
+		for i := range delays {
+			delays[i] = 5
+		}
+		err := gif.EncodeAll(f, &gif.GIF{
+			Image: images,
+			Delay: delays,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+	default:
+		img, err := setupBG(*bgColorHex, *l, *h)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = drawFGText(asciiArtLines, 0, 0, img, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	f, err := os.Create(*imageName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
+		f, err := os.Create(*imageName)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
 
-	if err := png.Encode(f, img); err != nil {
-		log.Fatal(err)
+		if err := png.Encode(f, img); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
@@ -95,18 +129,18 @@ func loadFont(fontPath string) (*truetype.Font, error) {
 	return f, nil
 }
 
-func setupBG(bgHex string, l, h int) (draw.Image, error) {
+func setupBG(bgHex string, l, h int) (*image.Paletted, error) {
 	c, err := parseHexColor(bgHex)
 	if err != nil {
 		return nil, err
 	}
 	bg := image.NewUniform(c)
-	finalImage := image.NewRGBA(image.Rect(0, 0, l, h))
+	finalImage := image.NewPaletted(image.Rect(0, 0, l, h), palette.Plan9)
 	draw.Draw(finalImage, finalImage.Bounds(), bg, image.Pt(0, 0), draw.Src)
 	return finalImage, nil
 }
 
-func drawFGText(lines []string, bg draw.Image, fgHex, fontPath string, fontSize, xPtFactor, yPtFactor float64) error {
+func drawFGText(lines []string, s, e int, bg draw.Image, fgHex, fontPath string, fontSize, xPtFactor, yPtFactor float64) error {
 	c := freetype.NewContext()
 	c.SetDPI(72)
 	f, err := loadFont(fontPath)
@@ -129,9 +163,15 @@ func drawFGText(lines []string, bg draw.Image, fgHex, fontPath string, fontSize,
 	textYOffset := 30 + int(c.PointToFixed(fontSize)>>6) // Note shift/truncate 6 bits first
 
 	pt := freetype.Pt(textXOffset, textYOffset)
+	log.Print(s, e, len(lines[0]))
 	for _, line := range lines {
 		startX := pt.X
-		for _, char := range line {
+		l := line
+		if s < e {
+			l = line[s:e]
+		}
+		log.Print(l)
+		for _, char := range l {
 			_, err := c.DrawString(strings.Replace(string(char), "\r", " ", -1), pt)
 			if err != nil {
 				return err

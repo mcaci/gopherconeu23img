@@ -22,3 +22,24 @@ This is the flag list:
 
 These flags can be listed using the `--help` flag.
 
+## Examples
+
+Here are some examples with the commands run to create them:
+
+1. go run main.go -o talk.png Go Beyond the Console: Developing 2D Games With Go
+![Example 1](./examples/talk.png)
+
+2. go run main.go -o examples/talk2.png -figlet banner3 -l 9500 -bgHex 0xabc -fgHex 0x000 Towards Modern Development of Cloud Applications With Service Weaver
+![Example 2](./examples/talk2.png)
+
+3. go run main.go -o examples/talk3.png -figlet banner -l 3100 Gentle Introduction To eBPF
+![Example 1](./examples/talk3.png)
+
+4. go run main.go -o examples/talk4.png -fontSize=48 -figlet larry3d -l 9500 -h 500 -bgHex 0xc0c -fgHex 0x000 Go Right Ahead! Simple Hacks To Cut Memory Usage by 80%
+![Example 2](./examples/talk4.png)
+
+5. go run main.go -o examples/talk5.png -figlet roman -l 9500 -bgHex 0xabc -fgHex 0x000 Go Right Ahead! Simple Hacks To Cut Memory Usage by 80%
+![Example 1](./examples/talk5.png)
+
+6. go run main.go -o examples/talk.gif -gif Go Beyond the Console: Developing 2D Games With Go
+![Example 2](./examples/talk.gif)
