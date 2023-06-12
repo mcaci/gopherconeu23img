@@ -18,16 +18,16 @@ import (
 )
 
 func main() {
-	bgColorHex := flag.String("bgHex", "0x300a24", "Hexadecimal value for the background color")
-	l := flag.Int("l", 1200, "Length of the image")
-	h := flag.Int("h", 630, "Height of the image")
+	bgColorHex := flag.String("bgHex", "0x4d3178", "Hexadecimal value for the background color")
+	l := flag.Int("l", 2400, "Length of the image")
+	h := flag.Int("h", 300, "Height of the image")
 	fgColorHex := flag.String("fgHex", "0xabc", "Hexadecimal value for the background color")
 	fontPath := flag.String("fontPath", "/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf", "path for the font to use")
 	fontSize := flag.Float64("fontSize", 32.0, "font size of the output text in the image")
 	xPtFactor := flag.Float64("xPtFactor", 0.5, "x size factor of one letter box")
 	yPtFactor := flag.Float64("yPtFactor", 1.0, "y size factor of one letter box")
-	imageName := flag.String("o", "text.png", "name of the output image")
-	figlet := flag.String("figlet", "", "name of the figlet font; see https://github.com/common-nighthawk/go-figure/tree/master/fonts for the values and http://www.figlet.org/examples.html for the actual effect")
+	imageName := flag.String("o", "examples/text.png", "name of the output image")
+	figlet := flag.String("figlet", "banner", "name of the figlet font; see https://github.com/common-nighthawk/go-figure/tree/master/fonts for the values and http://www.figlet.org/examples.html for the actual effect")
 	flag.Parse()
 
 	asciiArtLines := prepareText(strings.Join(flag.Args(), " "), *figlet)
@@ -125,8 +125,8 @@ func drawFGText(lines []string, bg draw.Image, fgHex, fontPath string, fontSize,
 	c.SetSrc(fg)
 	c.SetHinting(font.HintingNone)
 
-	textXOffset := 50
-	textYOffset := 10 + int(c.PointToFixed(fontSize)>>6) // Note shift/truncate 6 bits first
+	textXOffset := 10
+	textYOffset := 30 + int(c.PointToFixed(fontSize)>>6) // Note shift/truncate 6 bits first
 
 	pt := freetype.Pt(textXOffset, textYOffset)
 	for _, line := range lines {
