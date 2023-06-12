@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func main1() {
+func letter() {
 	const a = ` * 
 * *
 ***

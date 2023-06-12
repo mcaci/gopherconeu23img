@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
@@ -9,96 +11,80 @@ import (
 	"os"
 	"strings"
 
+	"github.com/common-nighthawk/go-figure"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
 )
 
 func main() {
-	textContent := "text"
-	fontSize := 32.0
-	fgColorHex := 0xff
-	bgColorHex := 0xff
+	bgColorHex := flag.String("bgHex", "0x300a24", "Hexadecimal value for the background color")
+	l := flag.Int("l", 1200, "Length of the image")
+	h := flag.Int("h", 630, "Height of the image")
+	fgColorHex := flag.String("fgHex", "0xabc", "Hexadecimal value for the background color")
+	fontPath := flag.String("fontPath", "/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf", "path for the font to use")
+	fontSize := flag.Float64("fontSize", 32.0, "font size of the output text in the image")
+	xPtFactor := flag.Float64("xPtFactor", 0.5, "x size factor of one letter box")
+	yPtFactor := flag.Float64("yPtFactor", 1.0, "y size factor of one letter box")
+	imageName := flag.String("o", "text.png", "name of the output image")
+	figlet := flag.String("figlet", "", "name of the figlet font; see https://github.com/common-nighthawk/go-figure/tree/master/fonts for the values and http://www.figlet.org/examples.html for the actual effect")
+	flag.Parse()
 
-	img, err := generateImage(textContent, fgColorHex, bgColorHex, fontSize)
+	asciiArtLines := prepareText(strings.Join(flag.Args(), " "), *figlet)
+
+	img, err := setupBG(*bgColorHex, *l, *h)
 	if err != nil {
 		log.Fatal(err)
 	}
-	f, err := os.Create("text.png")
+
+	err = drawFGText(asciiArtLines, img, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	f, err := os.Create("examples" + *imageName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
 
 	if err := png.Encode(f, img); err != nil {
-		f.Close()
-		log.Fatal(err)
-	}
-
-	if err := f.Close(); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func generateImage(textContent string, fgColorHex, bgColorHex int, fontSize float64) (image.Image, error) {
-
-	fgColor := color.RGBA{0xff, 0xff, 0xff, 0xff}
-	// if len(fgColorHex) == 7 {
-	// 	_, err := fmt.Sscanf(fgColorHex, "#%02x%02x%02x", &fgColor.R, &fgColor.G, &fgColor.B)
-	// 	if err != nil {
-	// 		log.Println(err)
-	// 		fgColor = color.RGBA{0x2e, 0x34, 0x36, 0xff}
-	// 	}
-	// }
-
-	bgColor := color.RGBA{0x30, 0x0a, 0x24, 0xff}
-	// if len(bgColorHex) == 7 {
-	// 	_, err := fmt.Sscanf(bgColorHex, "#%02x%02x%02x", &bgColor.R, &bgColor.G, &bgColor.B)
-	// 	if err != nil {
-	// 		log.Println(err)
-	// 		bgColor = color.RGBA{0x30, 0x0a, 0x24, 0xff}
-	// 	}
-	// }
-
-	loadedFont, err := loadFont()
-	if err != nil {
-		log.Println(err)
-		return nil, err
+func parseHexColor(hex string) (color.RGBA, error) {
+	var c color.RGBA
+	var err error
+	c.A = 0xff
+	switch len(hex) {
+	case 8:
+		_, err = fmt.Sscanf(hex, "0x%02x%02x%02x", &c.R, &c.G, &c.B)
+		return c, err
+	case 5:
+		_, err = fmt.Sscanf(hex, "0x%1x%1x%1x", &c.R, &c.G, &c.B)
+		// Double the hex digits:
+		c.R *= 17
+		c.G *= 17
+		c.B *= 17
+		return c, err
+	default:
+		return color.RGBA{}, fmt.Errorf("invalid length, must be 8 or 5")
 	}
-
-	code := strings.Replace(textContent, "\t", "    ", -1) // convert tabs into spaces
-	text := strings.Split(code, "\n")                      // split newlines into arrays
-
-	fg := image.NewUniform(fgColor)
-	bg := image.NewUniform(bgColor)
-	rgba := image.NewRGBA(image.Rect(0, 0, 1200, 630))
-	draw.Draw(rgba, rgba.Bounds(), bg, image.Pt(0, 0), draw.Src)
-	c := freetype.NewContext()
-	c.SetDPI(72)
-	c.SetFont(loadedFont)
-	c.SetFontSize(fontSize)
-	c.SetClip(rgba.Bounds())
-	c.SetDst(rgba)
-	c.SetSrc(fg)
-	c.SetHinting(font.HintingNone)
-
-	textXOffset := 50
-	textYOffset := 10 + int(c.PointToFixed(fontSize)>>6) // Note shift/truncate 6 bits first
-
-	pt := freetype.Pt(textXOffset, textYOffset)
-	for _, s := range text {
-		_, err = c.DrawString(strings.Replace(s, "\r", "", -1), pt)
-		if err != nil {
-			return nil, err
-		}
-		pt.Y += c.PointToFixed(fontSize * 1.5)
-	}
-
-	return rgba, nil
 }
 
-func loadFont() (*truetype.Font, error) {
-	fontFile := "/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf"
-	fontBytes, err := os.ReadFile(fontFile)
+func prepareText(msg, figlet string) []string {
+	text := figure.NewFigure(msg, figlet, true)
+	text.Print()
+	asciiArtLines := text.Slicify()
+	for i := range asciiArtLines {
+		asciiArtLines[i] = strings.Replace(asciiArtLines[i], "\t", "    ", -1) // convert tabs into spaces
+	}
+	return asciiArtLines
+}
+
+func loadFont(fontPath string) (*truetype.Font, error) {
+	fontBytes, err := os.ReadFile(fontPath)
 	if err != nil {
 		return nil, err
 	}
@@ -107,4 +93,53 @@ func loadFont() (*truetype.Font, error) {
 		return nil, err
 	}
 	return f, nil
+}
+
+func setupBG(bgHex string, l, h int) (draw.Image, error) {
+	c, err := parseHexColor(bgHex)
+	if err != nil {
+		return nil, err
+	}
+	bg := image.NewUniform(c)
+	finalImage := image.NewRGBA(image.Rect(0, 0, l, h))
+	draw.Draw(finalImage, finalImage.Bounds(), bg, image.Pt(0, 0), draw.Src)
+	return finalImage, nil
+}
+
+func drawFGText(lines []string, bg draw.Image, fgHex, fontPath string, fontSize, xPtFactor, yPtFactor float64) error {
+	c := freetype.NewContext()
+	c.SetDPI(72)
+	f, err := loadFont(fontPath)
+	if err != nil {
+		return err
+	}
+	c.SetFont(f)
+	c.SetFontSize(fontSize)
+	c.SetClip(bg.Bounds())
+	c.SetDst(bg)
+	fgColor, err := parseHexColor(fgHex)
+	if err != nil {
+		return err
+	}
+	fg := image.NewUniform(fgColor)
+	c.SetSrc(fg)
+	c.SetHinting(font.HintingNone)
+
+	textXOffset := 50
+	textYOffset := 10 + int(c.PointToFixed(fontSize)>>6) // Note shift/truncate 6 bits first
+
+	pt := freetype.Pt(textXOffset, textYOffset)
+	for _, line := range lines {
+		startX := pt.X
+		for _, char := range line {
+			_, err := c.DrawString(strings.Replace(string(char), "\r", " ", -1), pt)
+			if err != nil {
+				return err
+			}
+			pt.X += c.PointToFixed(fontSize * xPtFactor)
+		}
+		pt.X = startX
+		pt.Y += c.PointToFixed(fontSize * yPtFactor)
+	}
+	return nil
 }
