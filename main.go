@@ -42,7 +42,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	f, err := os.Create("examples" + *imageName)
+	f, err := os.Create(*imageName)
 	if err != nil {
 		log.Fatal(err)
 	}
