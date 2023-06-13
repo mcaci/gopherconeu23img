@@ -35,19 +35,19 @@ func main() {
 	flag.Parse()
 
 	asciiArtLines := prepareText(strings.Join(flag.Args(), " "), *figlet)
+	lImg, hImg := imgBounds(asciiArtLines, *fontSize, *xPtFactor, *yPtFactor, *l, *h)
 
 	switch {
 	case *banner:
-		makeBanner(asciiArtLines, *l, *h, *imageName, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+		makeBanner(asciiArtLines, lImg, hImg, *imageName, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
 	case *blink:
-		makeBlink(asciiArtLines, *l, *h, *imageName, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+		makeBlink(asciiArtLines, lImg, hImg, *imageName, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
 	default:
-		makePng(asciiArtLines, *l, *h, *imageName, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+		makePng(asciiArtLines, lImg, hImg, *imageName, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
 	}
 }
 
 func makeBanner(asciiArtLines []string, l, h int, imageName, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) {
-	l, h = imgBounds(asciiArtLines, fontSize, xPtFactor, yPtFactor, l, h)
 	var images []*image.Paletted
 	d := 170
 	for i := 0; i < maxLineLen(asciiArtLines)-d+1; i++ {
@@ -78,7 +78,6 @@ func makeBanner(asciiArtLines []string, l, h int, imageName, bgColorHex, fgColor
 }
 
 func makeBlink(asciiArtLines []string, l, h int, imageName, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) {
-	l, h = imgBounds(asciiArtLines, fontSize, xPtFactor, yPtFactor, l, h)
 	var images []*image.Paletted
 	for i := 0; i < 10; i++ {
 		var img *image.Paletted
@@ -120,7 +119,6 @@ func makeBlink(asciiArtLines []string, l, h int, imageName, bgColorHex, fgColorH
 }
 
 func makePng(asciiArtLines []string, l, h int, imageName, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) {
-	l, h = imgBounds(asciiArtLines, fontSize, xPtFactor, yPtFactor, l, h)
 	img, err := setupBG(bgColorHex, l, h)
 	if err != nil {
 		log.Fatal(err)
