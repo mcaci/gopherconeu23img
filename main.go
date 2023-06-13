@@ -236,6 +236,9 @@ func drawFGText(lines []string, s, e int, bg draw.Image, fgHex, fontPath string,
 
 	pt := freetype.Pt(textXOffset, textYOffset)
 	for _, line := range lines {
+  if Len(line) == 0 {
+    continue
+  }
 		startX := pt.X
 		if s < e && e < len(line) {
 			line = line[s:e]
