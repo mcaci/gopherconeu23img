@@ -22,32 +22,78 @@ import (
 func main() {
 	l := flag.Int("l", 0, "Length of the image")
 	h := flag.Int("h", 0, "Height of the image")
-	imageName := flag.String("o", "examples/text.png", "name of the output image")
+	path := flag.String("o", "examples/text.png", "path of the output image/gif")
 	bgColorHex := flag.String("bgHex", "0x4d3178", "Hexadecimal value for the background color")
-	fgColorHex := flag.String("fgHex", "0xabc", "Hexadecimal value for the background color")
-	fontPath := flag.String("fontPath", "/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf", "path for the font to use")
+	fgColorHex := flag.String("fgHex", "0xabc", "Hexadecimal value for the color of the text")
+	fontPath := flag.String("fontPath", "/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf", "path of the font to use")
 	fontSize := flag.Float64("fontSize", 32.0, "font size of the output text in the image")
 	xPtFactor := flag.Float64("xPtFactor", 0.5, "x size factor of one letter box")
 	yPtFactor := flag.Float64("yPtFactor", 1.0, "y size factor of one letter box")
 	figlet := flag.String("figlet", "banner", "name of the figlet font; see https://github.com/common-nighthawk/go-figure/tree/master/fonts for the values and http://www.figlet.org/examples.html for the actual effect")
 	banner := flag.Bool("banner", false, "if true it's a banner gif, else it's a picture")
-	blink := flag.Bool("blink", false, "if true it's a blinking gif, else it's a picture")
+	blink := flag.Bool("blink", false, "if true it's a plain blinking gif, else it's a picture")
+	alt := flag.Bool("alt", false, "if true it's a alternating colors blinking gif, else it's a picture")
 	flag.Parse()
 
 	asciiArtLines := prepareText(strings.Join(flag.Args(), " "), *figlet)
-	lImg, hImg := imgBounds(asciiArtLines, *fontSize, *xPtFactor, *yPtFactor, *l, *h)
+	lImg, hImg := imgBounds(asciiArtLines, *fontSize, *xPtFactor, *yPtFactor)
+	if *l != 0 {
+		lImg = *l
+	}
+	if *h != 0 {
+		hImg = *h
+	}
 
 	switch {
 	case *banner:
-		makeBanner(asciiArtLines, lImg, hImg, *imageName, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+		images := makeBanner(asciiArtLines, lImg, hImg, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+		writeGif(images, 5, *path)
 	case *blink:
-		makeBlink(asciiArtLines, lImg, hImg, *imageName, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+		images := makeBlink(asciiArtLines, lImg, hImg, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+		writeGif(images, 75, *path)
+	case *alt:
+		images := makeAlt(asciiArtLines, lImg, hImg, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+		writeGif(images, 75, *path)
 	default:
-		makePng(asciiArtLines, lImg, hImg, *imageName, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+		image := makePng(asciiArtLines, lImg, hImg, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+		writePng(image, *path)
 	}
 }
 
-func makeBanner(asciiArtLines []string, l, h int, imageName, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) {
+func mustFile(name string) *os.File {
+	f, err := os.Create(name)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return f
+}
+
+func writeGif(images []*image.Paletted, delay int, path string) {
+	f := mustFile(path)
+	defer f.Close()
+	delays := make([]int, len(images))
+	for i := range delays {
+		delays[i] = delay
+	}
+	err := gif.EncodeAll(f, &gif.GIF{
+		Image: images,
+		Delay: delays,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func writePng(image *image.Paletted, path string) {
+	f := mustFile(path)
+	defer f.Close()
+	err := png.Encode(f, image)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func makeBanner(asciiArtLines []string, l, h int, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) []*image.Paletted {
 	var images []*image.Paletted
 	d := 170
 	for i := 0; i < maxLineLen(asciiArtLines)-d+1; i++ {
@@ -61,25 +107,37 @@ func makeBanner(asciiArtLines []string, l, h int, imageName, bgColorHex, fgColor
 		}
 		images = append(images, img)
 	}
-
-	f, _ := os.Create(imageName)
-	defer f.Close()
-	delays := make([]int, len(images))
-	for i := range delays {
-		delays[i] = 5
-	}
-	err := gif.EncodeAll(f, &gif.GIF{
-		Image: images,
-		Delay: delays,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
+	return images
 }
 
-func makeBlink(asciiArtLines []string, l, h int, imageName, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) {
+func makeBlink(asciiArtLines []string, l, h int, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) []*image.Paletted {
+	const maxBlink = 10
 	var images []*image.Paletted
-	for i := 0; i < 10; i++ {
+	for i := 0; i < maxBlink; i++ {
+		var img *image.Paletted
+		var err error
+		img, err = setupBG(bgColorHex, l, h)
+		if err != nil {
+			log.Fatal(err)
+		}
+		switch i % 2 {
+		case 0:
+			err = drawFGText(asciiArtLines, 0, 0, img, fgColorHex, fontPath, fontSize, xPtFactor, yPtFactor)
+			if err != nil {
+				log.Fatal(err)
+			}
+		default:
+			// do nothing (just background)
+		}
+		images = append(images, img)
+	}
+	return images
+}
+
+func makeAlt(asciiArtLines []string, l, h int, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) []*image.Paletted {
+	const maxBlink = 10
+	var images []*image.Paletted
+	for i := 0; i < maxBlink; i++ {
 		var img *image.Paletted
 		var err error
 		switch i % 2 {
@@ -92,33 +150,22 @@ func makeBlink(asciiArtLines []string, l, h int, imageName, bgColorHex, fgColorH
 			if err != nil {
 				log.Fatal(err)
 			}
-		case 1:
-			img, err = setupBG(bgColorHex, l, h)
+		default:
+			img, err = setupBG(fgColorHex, l, h)
 			if err != nil {
 				log.Fatal(err)
 			}
-		default:
-			log.Fatal("never happens")
+			err = drawFGText(asciiArtLines, 0, 0, img, bgColorHex, fontPath, fontSize, xPtFactor, yPtFactor)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 		images = append(images, img)
 	}
-
-	f, _ := os.Create(imageName)
-	defer f.Close()
-	delays := make([]int, len(images))
-	for i := range delays {
-		delays[i] = 75
-	}
-	err := gif.EncodeAll(f, &gif.GIF{
-		Image: images,
-		Delay: delays,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
+	return images
 }
 
-func makePng(asciiArtLines []string, l, h int, imageName, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) {
+func makePng(asciiArtLines []string, l, h int, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) *image.Paletted {
 	img, err := setupBG(bgColorHex, l, h)
 	if err != nil {
 		log.Fatal(err)
@@ -127,16 +174,7 @@ func makePng(asciiArtLines []string, l, h int, imageName, bgColorHex, fgColorHex
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	f, err := os.Create(imageName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-
-	if err := png.Encode(f, img); err != nil {
-		log.Fatal(err)
-	}
+	return img
 }
 
 func parseHexColor(hex string) (color.RGBA, error) {
@@ -159,12 +197,9 @@ func parseHexColor(hex string) (color.RGBA, error) {
 	}
 }
 
-func imgBounds(asciiArtLines []string, fontSize, xPtFactor, yPtFactor float64, l, h int) (int, int) {
-	if l != 0 && h != 0 {
-		return l, h
-	}
-	l = maxLineLen(asciiArtLines)*int(fontSize*xPtFactor) + 2*10 // +offset
-	h = len(asciiArtLines)*int(fontSize*yPtFactor) + 2*30        // +offset
+func imgBounds(asciiArtLines []string, fontSize, xPtFactor, yPtFactor float64) (int, int) {
+	l := maxLineLen(asciiArtLines)*int(fontSize*xPtFactor) + 2*10 // +offset
+	h := len(asciiArtLines)*int(fontSize*yPtFactor) + 2*30        // +offset
 	return l, h
 }
 
@@ -236,14 +271,14 @@ func drawFGText(lines []string, s, e int, bg draw.Image, fgHex, fontPath string,
 
 	pt := freetype.Pt(textXOffset, textYOffset)
 	for _, line := range lines {
-  if Len(line) == 0 {
-    continue
-  }
-		startX := pt.X
-		if s < e && e < len(line) {
-			line = line[s:e]
+		if len(line) == 0 {
+			continue
 		}
-		if s < e && e >= len(line) && s < len(line) {
+		startX := pt.X
+		switch {
+		case s < e && e < len(line):
+			line = line[s:e]
+		case s < e && e >= len(line) && s < len(line):
 			line = line[s:]
 		}
 		log.Print(line)
