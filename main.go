@@ -30,20 +30,23 @@ func main() {
 	xPtFactor := flag.Float64("xPtFactor", 0.5, "x size factor of one letter box")
 	yPtFactor := flag.Float64("yPtFactor", 1.0, "y size factor of one letter box")
 	figlet := flag.String("figlet", "banner", "name of the figlet font; see https://github.com/common-nighthawk/go-figure/tree/master/fonts for the values and http://www.figlet.org/examples.html for the actual effect")
-	isgif := flag.Bool("gif", false, "if true it's a gif, else it's a picture")
+	banner := flag.Bool("banner", false, "if true it's a banner gif, else it's a picture")
+	blink := flag.Bool("blink", false, "if true it's a blinking gif, else it's a picture")
 	flag.Parse()
 
 	asciiArtLines := prepareText(strings.Join(flag.Args(), " "), *figlet)
 
-	switch *isgif {
-	case true:
-		makeGif(asciiArtLines, *l, *h, *imageName, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+	switch {
+	case *banner:
+		makeBanner(asciiArtLines, *l, *h, *imageName, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+	case *blink:
+		makeBlink(asciiArtLines, *l, *h, *imageName, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
 	default:
 		makePng(asciiArtLines, *l, *h, *imageName, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
 	}
 }
 
-func makeGif(asciiArtLines []string, l, h int, imageName, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) {
+func makeBanner(asciiArtLines []string, l, h int, imageName, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) {
 	l, h = imgBounds(asciiArtLines, fontSize, xPtFactor, yPtFactor, l, h)
 	var images []*image.Paletted
 	d := 170
@@ -64,6 +67,48 @@ func makeGif(asciiArtLines []string, l, h int, imageName, bgColorHex, fgColorHex
 	delays := make([]int, len(images))
 	for i := range delays {
 		delays[i] = 5
+	}
+	err := gif.EncodeAll(f, &gif.GIF{
+		Image: images,
+		Delay: delays,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func makeBlink(asciiArtLines []string, l, h int, imageName, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) {
+	l, h = imgBounds(asciiArtLines, fontSize, xPtFactor, yPtFactor, l, h)
+	var images []*image.Paletted
+	for i := 0; i < 10; i++ {
+		var img *image.Paletted
+		var err error
+		switch i % 2 {
+		case 0:
+			img, err = setupBG(bgColorHex, l, h)
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = drawFGText(asciiArtLines, 0, 0, img, fgColorHex, fontPath, fontSize, xPtFactor, yPtFactor)
+			if err != nil {
+				log.Fatal(err)
+			}
+		case 1:
+			img, err = setupBG(bgColorHex, l, h)
+			if err != nil {
+				log.Fatal(err)
+			}
+		default:
+			log.Fatal("never happens")
+		}
+		images = append(images, img)
+	}
+
+	f, _ := os.Create(imageName)
+	defer f.Close()
+	delays := make([]int, len(images))
+	for i := range delays {
+		delays[i] = 75
 	}
 	err := gif.EncodeAll(f, &gif.GIF{
 		Image: images,
@@ -194,13 +239,11 @@ func drawFGText(lines []string, s, e int, bg draw.Image, fgHex, fontPath string,
 	pt := freetype.Pt(textXOffset, textYOffset)
 	for _, line := range lines {
 		startX := pt.X
-		if s < e {
-			switch {
-			case e < len(line):
-				line = line[s:e]
-			default:
-				line = line[s:]
-			}
+		if s < e && e < len(line) {
+			line = line[s:e]
+		}
+		if s < e && e >= len(line) && s < len(line) {
+			line = line[s:]
 		}
 		log.Print(line)
 		for _, char := range line {

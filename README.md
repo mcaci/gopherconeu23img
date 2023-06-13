@@ -33,13 +33,21 @@ Here are some examples with the commands run to create them:
 ![Example 2](./examples/talk2.png)
 
 3. go run main.go -o examples/talk3.png -figlet banner -l 3100 Gentle Introduction To eBPF
-![Example 1](./examples/talk3.png)
+![Example 3](./examples/talk3.png)
 
 4. go run main.go -o examples/talk4.png -fontSize=48 -figlet larry3d -l 9500 -h 500 -bgHex 0xc0c -fgHex 0x000 Go Right Ahead! Simple Hacks To Cut Memory Usage by 80%
-![Example 2](./examples/talk4.png)
+![Example 4](./examples/talk4.png)
 
 5. go run main.go -o examples/talk5.png -figlet roman -l 9500 -bgHex 0xabc -fgHex 0x000 Go Right Ahead! Simple Hacks To Cut Memory Usage by 80%
-![Example 1](./examples/talk5.png)
+![Example 5](./examples/talk5.png)
 
-6. go run main.go -o examples/talk.gif -gif Go Beyond the Console: Developing 2D Games With Go
-![Example 2](./examples/talk.gif)
+### Banner Gif
+
+1. go run main.go -o examples/talk.gif -gif Go Beyond the Console: Developing 2D Games With Go
+![Example 1](./examples/talk.gif)
+
+### Blinking Gif
+
+1. go run main.go -o examples/talk3.gif -figlet roman -blink -bgHex 0xabc -fgHex 0x000 Why Integration Tests Might Be Better Than Unit Tests
+![Example 1](./examples/talk3.gif)
+
