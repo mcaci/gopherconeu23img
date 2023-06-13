@@ -44,13 +44,35 @@ Here are some examples with the commands run to create them:
 6. go run main.go -o examples/talk6.png -figlet roman -bgHex 0xa23 -fgHex 0x121 Why Integration Tests Might Be Better Than Unit Tests
 ![Example 6](./examples/talk6.png)
 
+7. go run main.go -o examples/talk7.png -figlet 3-d -bgHex 0x423 -fgHex 0xeee Coffee Break
+![Example 7](./examples/talk7.png)
+
+8. go run main.go -o examples/talk8.png -figlet dotmatrix -bgHex 0x500 -fgHex 0xeee Coffee Break 
+![Example 8](./examples/talk8.png)
+
 ### Banner Gif
 
 1. go run main.go -o examples/talk.gif -gif Go Beyond the Console: Developing 2D Games With Go
 ![Example 1](./examples/talk.gif)
+
+2. go run main.go -o examples/talk2.gif -banner -bgHex 0xada -fgHex 0x121 Why Integration Tests Might Be Better Than Unit Tests
+![Example 2](./examples/talk2.gif)
+
+3. go run main.go -o examples/talk4.gif -figlet cosmic -banner -bgHex 0x044 -l 5656 Reaching the Unix Philosophys Logical Extreme With WebAssembly
+![Example 3](./examples/talk4.gif)
 
 ### Blinking Gif
 
 1. go run main.go -o examples/talk3.gif -figlet roman -blink -bgHex 0xabc -fgHex 0x000 Why Integration Tests Might Be Better Than Unit Tests
 ![Example 1](./examples/talk3.gif)
 
+2. go run main.go -o examples/talk6.gif -figlet computer -blink -bgHex 0xabc -fgHex 0x000 API Optimization Tale: Monitor, Fix and Deploy
+![Example 2](./examples/talk6.gif)
+
+### Blinking Gif with alternating colors 
+
+1. go run main.go -o examples/talk5.gif -figlet smkeyboard -alt Panel With the Go Team
+![Example 1](./examples/talk5.gif)
+
+2. go run main.go -o examples/talk7.gif -figlet isometric3 -alt -bgHex 0x500 -fgHex 0xeee Coffee Break
+![Example 2](./examples/talk7.gif)
