@@ -35,11 +35,14 @@ Here are some examples with the commands run to create them:
 3. go run main.go -o examples/talk3.png -figlet banner -l 3100 Gentle Introduction To eBPF
 ![Example 3](./examples/talk3.png)
 
-4. go run main.go -o examples/talk4.png -fontSize=48 -figlet larry3d -l 9500 -h 500 -bgHex 0xc0c -fgHex 0x000 Go Right Ahead! Simple Hacks To Cut Memory Usage by 80%
+4. go run main.go -o examples/talk4.png -fontSize=48 -figlet larry3d -l 9500 -h 500 -bgHex 0xc9c -fgHex 0x000 Go Right Ahead! Simple Hacks To Cut Memory Usage by 80%
 ![Example 4](./examples/talk4.png)
 
 5. go run main.go -o examples/talk5.png -figlet roman -l 9500 -bgHex 0xabc -fgHex 0x000 Go Right Ahead! Simple Hacks To Cut Memory Usage by 80%
 ![Example 5](./examples/talk5.png)
+
+6. go run main.go -o examples/talk6.png -figlet roman -bgHex 0xa23 -fgHex 0x121 Why Integration Tests Might Be Better Than Unit Tests
+![Example 6](./examples/talk6.png)
 
 ### Banner Gif
 
