@@ -66,13 +66,13 @@ Here are some examples with the commands run to create them:
 1. go run main.go -o examples/talk3.gif -figlet roman -blink -bgHex 0xabc -fgHex 0x000 Why Integration Tests Might Be Better Than Unit Tests
 ![Example 1](./examples/talk3.gif)
 
-2. go run main.go -o examples/talk6.gif -figlet computer -blink -bgHex 0xabc -fgHex 0x000 API Optimization Tale: Monitor, Fix and Deploy
-![Example 2](./examples/talk6.gif)
-
 ### Blinking Gif with alternating colors 
 
 1. go run main.go -o examples/talk5.gif -figlet smkeyboard -alt Panel With the Go Team
 ![Example 1](./examples/talk5.gif)
 
-2. go run main.go -o examples/talk7.gif -figlet isometric3 -alt -bgHex 0x500 -fgHex 0xeee Coffee Break
-![Example 2](./examples/talk7.gif)
+2. go run main.go -o examples/talk6.gif -figlet computer -alt -bgHex 0xabc -fgHex 0x000 API Optimization Tale: Monitor, Fix and Deploy
+![Example 2](./examples/talk6.gif)
+
+3. go run main.go -o examples/talk7.gif -figlet isometric3 -alt -bgHex 0x500 -fgHex 0xeee Coffee Break
+![Example 3](./examples/talk7.gif)
