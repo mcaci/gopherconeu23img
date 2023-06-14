@@ -29,16 +29,16 @@ Here are some examples with the commands run to create them:
 1. go run main.go -o talk.png Go Beyond the Console: Developing 2D Games With Go
 ![Example 1](./examples/talk.png)
 
-2. go run main.go -o examples/talk2.png -figlet banner3 -l 9500 -bgHex 0xabc -fgHex 0x000 Towards Modern Development of Cloud Applications With Service Weaver
+2. go run main.go -o examples/talk2.png -figlet banner3 -bgHex 0xabc -fgHex 0x000 Towards Modern Development of Cloud Applications With Service Weaver
 ![Example 2](./examples/talk2.png)
 
-3. go run main.go -o examples/talk3.png -figlet banner -l 3100 Gentle Introduction To eBPF
+3. go run main.go -o examples/talk3.png -figlet banner -l 5000 -h 1000 Gentle Introduction To eBPF
 ![Example 3](./examples/talk3.png)
 
-4. go run main.go -o examples/talk4.png -fontSize=48 -figlet larry3d -l 9500 -h 500 -bgHex 0xc9c -fgHex 0x000 Go Right Ahead! Simple Hacks To Cut Memory Usage by 80%
+4. go run main.go -o examples/talk4.png -fontSize=48 -figlet larry3d -bgHex 0xc9c -fgHex 0x000 Go Right Ahead! Simple Hacks To Cut Memory Usage by 80%
 ![Example 4](./examples/talk4.png)
 
-5. go run main.go -o examples/talk5.png -figlet roman -l 9500 -bgHex 0xabc -fgHex 0x000 Go Right Ahead! Simple Hacks To Cut Memory Usage by 80%
+5. go run main.go -o examples/talk5.png -figlet roman -bgHex 0xabc -fgHex 0x000 Go Right Ahead! Simple Hacks To Cut Memory Usage by 80%
 ![Example 5](./examples/talk5.png)
 
 6. go run main.go -o examples/talk6.png -figlet roman -bgHex 0xa23 -fgHex 0x121 Why Integration Tests Might Be Better Than Unit Tests
@@ -58,7 +58,7 @@ Here are some examples with the commands run to create them:
 2. go run main.go -o examples/talk2.gif -banner -bgHex 0xada -fgHex 0x121 Why Integration Tests Might Be Better Than Unit Tests
 ![Example 2](./examples/talk2.gif)
 
-3. go run main.go -o examples/talk4.gif -figlet cosmic -banner -bgHex 0x044 -l 5656 Reaching the Unix Philosophys Logical Extreme With WebAssembly
+3. go run main.go -o examples/talk4.gif -figlet cosmic -banner -bgHex 0x044 Reaching the Unix Philosophys Logical Extreme With WebAssembly
 ![Example 3](./examples/talk4.gif)
 
 ### Blinking Gif

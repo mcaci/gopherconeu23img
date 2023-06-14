@@ -25,7 +25,7 @@ func main() {
 	path := flag.String("o", "examples/text.png", "path of the output image/gif")
 	bgColorHex := flag.String("bgHex", "0x4d3178", "Hexadecimal value for the background color")
 	fgColorHex := flag.String("fgHex", "0xabc", "Hexadecimal value for the color of the text")
-	fontPath := flag.String("fontPath", "/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf", "path of the font to use")
+	fontPath := flag.String("fontPath", "fonts/Ubuntu-R.ttf", "path of the font to use")
 	fontSize := flag.Float64("fontSize", 32.0, "font size of the output text in the image")
 	xPtFactor := flag.Float64("xPtFactor", 0.5, "x size factor of one letter box")
 	yPtFactor := flag.Float64("yPtFactor", 1.0, "y size factor of one letter box")
@@ -60,12 +60,79 @@ func main() {
 	}
 }
 
-func mustFile(name string) *os.File {
-	f, err := os.Create(name)
+func makeBanner(asciiArtLines []string, l, h int, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) []*image.Paletted {
+	var images []*image.Paletted
+	d := int(float64(l) / fontSize)
+	for i := range asciiArtLines[0] {
+		img, err := setupBG(bgColorHex, l/2+l/100, h)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = drawFGText(asciiArtLines, i, i+d, img, fgColorHex, fontPath, fontSize, xPtFactor, yPtFactor)
+		if err != nil {
+			log.Fatal(err)
+		}
+		images = append(images, img)
+	}
+	return images
+}
+
+func makeBlink(asciiArtLines []string, l, h int, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) []*image.Paletted {
+	const maxBlink = 10
+	var images []*image.Paletted
+	for i := 0; i < maxBlink; i++ {
+		img, err := setupBG(bgColorHex, l, h)
+		if err != nil {
+			log.Fatal(err)
+		}
+		switch i % 2 {
+		case 0:
+			err = drawFGText(asciiArtLines, 0, 0, img, fgColorHex, fontPath, fontSize, xPtFactor, yPtFactor)
+			if err != nil {
+				log.Fatal(err)
+			}
+		default:
+			// do nothing (just background)
+		}
+		images = append(images, img)
+	}
+	return images
+}
+
+func makeAlt(asciiArtLines []string, l, h int, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) []*image.Paletted {
+	const maxBlink = 10
+	var images []*image.Paletted
+	for i := 0; i < maxBlink; i++ {
+		var bgColor0x, fgColor0x string
+		switch i % 2 {
+		case 0:
+			bgColor0x, fgColor0x = bgColorHex, fgColorHex // same as params
+		default:
+			bgColor0x, fgColor0x = fgColorHex, bgColorHex // switch colors
+		}
+		img, err := setupBG(bgColor0x, l, h)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = drawFGText(asciiArtLines, 0, 0, img, fgColor0x, fontPath, fontSize, xPtFactor, yPtFactor)
+		if err != nil {
+			log.Fatal(err)
+		}
+		images = append(images, img)
+	}
+	return images
+}
+
+func makePng(asciiArtLines []string, l, h int, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) *image.Paletted {
+	img, err := setupBG(bgColorHex, l, h)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return f
+	err = drawFGText(asciiArtLines, 0, 0, img, fgColorHex, fontPath, fontSize, xPtFactor, yPtFactor)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return img
 }
 
 func writeGif(images []*image.Paletted, delay int, path string) {
@@ -93,88 +160,12 @@ func writePng(image *image.Paletted, path string) {
 	}
 }
 
-func makeBanner(asciiArtLines []string, l, h int, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) []*image.Paletted {
-	var images []*image.Paletted
-	d := 170
-	for i := 0; i < maxLineLen(asciiArtLines)-d+1; i++ {
-		img, err := setupBG(bgColorHex, l/2, h)
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = drawFGText(asciiArtLines, i, i+d, img, fgColorHex, fontPath, fontSize, xPtFactor, yPtFactor)
-		if err != nil {
-			log.Fatal(err)
-		}
-		images = append(images, img)
-	}
-	return images
-}
-
-func makeBlink(asciiArtLines []string, l, h int, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) []*image.Paletted {
-	const maxBlink = 10
-	var images []*image.Paletted
-	for i := 0; i < maxBlink; i++ {
-		var img *image.Paletted
-		var err error
-		img, err = setupBG(bgColorHex, l, h)
-		if err != nil {
-			log.Fatal(err)
-		}
-		switch i % 2 {
-		case 0:
-			err = drawFGText(asciiArtLines, 0, 0, img, fgColorHex, fontPath, fontSize, xPtFactor, yPtFactor)
-			if err != nil {
-				log.Fatal(err)
-			}
-		default:
-			// do nothing (just background)
-		}
-		images = append(images, img)
-	}
-	return images
-}
-
-func makeAlt(asciiArtLines []string, l, h int, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) []*image.Paletted {
-	const maxBlink = 10
-	var images []*image.Paletted
-	for i := 0; i < maxBlink; i++ {
-		var img *image.Paletted
-		var err error
-		switch i % 2 {
-		case 0:
-			img, err = setupBG(bgColorHex, l, h)
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = drawFGText(asciiArtLines, 0, 0, img, fgColorHex, fontPath, fontSize, xPtFactor, yPtFactor)
-			if err != nil {
-				log.Fatal(err)
-			}
-		default:
-			img, err = setupBG(fgColorHex, l, h)
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = drawFGText(asciiArtLines, 0, 0, img, bgColorHex, fontPath, fontSize, xPtFactor, yPtFactor)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-		images = append(images, img)
-	}
-	return images
-}
-
-func makePng(asciiArtLines []string, l, h int, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) *image.Paletted {
-	img, err := setupBG(bgColorHex, l, h)
+func mustFile(name string) *os.File {
+	f, err := os.Create(name)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = drawFGText(asciiArtLines, 0, 0, img, fgColorHex, fontPath, fontSize, xPtFactor, yPtFactor)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return img
+	return f
 }
 
 func parseHexColor(hex string) (color.RGBA, error) {
@@ -218,8 +209,13 @@ func prepareText(msg, figlet string) []string {
 	text := figure.NewFigure(msg, figlet, true)
 	text.Print()
 	asciiArtLines := text.Slicify()
+	l := maxLineLen(asciiArtLines)
 	for i := range asciiArtLines {
-		asciiArtLines[i] = strings.Replace(asciiArtLines[i], "\t", "    ", -1) // convert tabs into spaces
+		d := l - len(asciiArtLines[i])
+		if d == 0 {
+			continue
+		}
+		asciiArtLines[i] += strings.Repeat(" ", d)
 	}
 	return asciiArtLines
 }
@@ -241,10 +237,9 @@ func setupBG(bgHex string, l, h int) (*image.Paletted, error) {
 	if err != nil {
 		return nil, err
 	}
-	bg := image.NewUniform(c)
-	finalImage := image.NewPaletted(image.Rect(0, 0, l, h), palette.Plan9)
-	draw.Draw(finalImage, finalImage.Bounds(), bg, image.Pt(0, 0), draw.Src)
-	return finalImage, nil
+	bg := image.NewPaletted(image.Rect(0, 0, l, h), palette.Plan9)
+	draw.Draw(bg, bg.Bounds(), image.NewUniform(c), image.Pt(0, 0), draw.Src)
+	return bg, nil
 }
 
 func drawFGText(lines []string, s, e int, bg draw.Image, fgHex, fontPath string, fontSize, xPtFactor, yPtFactor float64) error {
@@ -278,7 +273,7 @@ func drawFGText(lines []string, s, e int, bg draw.Image, fgHex, fontPath string,
 		switch {
 		case s < e && e < len(line):
 			line = line[s:e]
-		case s < e && e >= len(line) && s < len(line):
+		case s < e && e >= len(line):
 			line = line[s:]
 		}
 		log.Print(line)
