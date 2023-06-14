@@ -33,6 +33,8 @@ func main() {
 	banner := flag.Bool("banner", false, "if true it's a banner gif, else it's a picture")
 	blink := flag.Bool("blink", false, "if true it's a plain blinking gif, else it's a picture")
 	alt := flag.Bool("alt", false, "if true it's a alternating colors blinking gif, else it's a picture")
+	delay := flag.Int("delay", 0, "used with '-banner, '-blink' or '-alt', it indicates the delay between each frame of the gif")
+
 	flag.Parse()
 
 	asciiArtLines := prepareText(strings.Join(flag.Args(), " "), *figlet)
@@ -47,13 +49,22 @@ func main() {
 	switch {
 	case *banner:
 		images := makeBanner(asciiArtLines, lImg, hImg, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
-		writeGif(images, 5, *path)
+		if *delay == 0 {
+			*delay = 5
+		}
+		writeGif(images, *delay, *path)
 	case *blink:
 		images := makeBlink(asciiArtLines, lImg, hImg, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
-		writeGif(images, 75, *path)
+		if *delay == 0 {
+			*delay = 75
+		}
+		writeGif(images, *delay, *path)
 	case *alt:
 		images := makeAlt(asciiArtLines, lImg, hImg, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
-		writeGif(images, 75, *path)
+		if *delay == 0 {
+			*delay = 100
+		}
+		writeGif(images, *delay, *path)
 	default:
 		image := makePng(asciiArtLines, lImg, hImg, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
 		writePng(image, *path)
