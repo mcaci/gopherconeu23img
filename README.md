@@ -62,16 +62,16 @@ Here are some examples with the commands run to create them:
 
 ### Banner Gif
 
-1. go run main.go -o examples/talk.gif -banner -delay 5 Go Beyond the Console: Developing 2D Games With Go
+1. go run main.go -o examples/talk.gif -banner Go Beyond the Console: Developing 2D Games With Go
 ![Example 1](./examples/talk.gif)
 
-2. go run main.go -o examples/talk2.gif -banner -delay 5 -bgHex 0xada -fgHex 0x121 Why Integration Tests Might Be Better Than Unit Tests
+2. go run main.go -o examples/talk2.gif -banner -bgHex 0xada -fgHex 0x121 Why Integration Tests Might Be Better Than Unit Tests
 ![Example 2](./examples/talk2.gif)
 
-3. go run main.go -o examples/talk4.gif -figlet cosmic -banner -delay 10 -bgHex 0x044 Reaching the Unix Philosophys Logical Extreme With WebAssembly
+3. go run main.go -o examples/talk4.gif -figlet cosmic -banner -bgHex 0x044 Reaching the Unix Philosophys Logical Extreme With WebAssembly
 ![Example 3](./examples/talk4.gif)
 
-4. go run main.go -o examples/talk8.gif -figlet smkeyboard -banner -delay 15 Panel With the Go Team
+4. go run main.go -o examples/talk8.gif -figlet smkeyboard -banner -delay 10 Panel With the Go Team
 ![Example 4](./examples/talk8.gif)
 
 ### Blinking Gif
