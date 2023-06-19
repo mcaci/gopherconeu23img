@@ -3,7 +3,7 @@ This repo contains a CLI that produces some proposals for images to use during g
 
 ## How to use it
 
-Get it with `go install gitHub.com/mcaci/gopherconeu23img@latest` then run it as `gophercon23img $TEXT` to get a first example with the text of your choice.
+Get it with `go install github.com/mcaci/gopherconeu23img@latest` then run it as `gopherconeu23img $TEXT` to get a first example with the text of your choice.
 
 There are some flags that can be used to customize the image that is produced.
 
@@ -30,62 +30,68 @@ These flags can be listed using the `--help` flag.
 
 Here are some examples with the commands run to create them:
 
-1. go run main.go -o talk.png Go Beyond the Console: Developing 2D Games With Go
+1. gophercon23img -o talk.png Go Beyond the Console: Developing 2D Games With Go
 ![Example 1](./examples/talk.png)
 
-2. go run main.go -o examples/talk2.png -figlet banner3 -bgHex 0xabc -fgHex 0x000 Towards Modern Development of Cloud Applications With Service Weaver
+2. gophercon23img -o examples/talk2.png -figlet banner3 -bgHex 0xb4d9ef -fgHex 0x000 Towards Modern Development of Cloud Applications With Service Weaver
 ![Example 2](./examples/talk2.png)
 
-3. go run main.go -o examples/talk3.png -figlet larry3d -l 5000 -h 1000 Go Right Ahead! Simple Hacks To Cut Memory Usage by 80%
+3. gophercon23img -o examples/talk3.png -figlet larry3d -l 7500 -h 500 -bgHex 0xff9e99 -fgHex 0x325e5e Go Right Ahead! Simple Hacks To Cut Memory Usage by 80%
 ![Example 3](./examples/talk3.png)
 
-4. go run main.go -o examples/talk4.png -fontSize=48 -figlet banner -bgHex 0xc9c -fgHex 0x000 Gentle Introduction To eBPF
+4. gophercon23img -o examples/talk4.png -fontSize=48 -figlet banner -bgHex 0xc9c -fgHex 0x000 Gentle Introduction To eBPF
 ![Example 4](./examples/talk4.png)
 
-5. go run main.go -o examples/talk5.png -figlet roman -bgHex 0xabc -fgHex 0x000 Go Right Ahead! Simple Hacks To Cut Memory Usage by 80%
+5. gophercon23img -o examples/talk5.png -figlet roman -bgHex 0xabc -fgHex 0x000 Go Right Ahead! Simple Hacks To Cut Memory Usage by 80%
 ![Example 5](./examples/talk5.png)
 
-6. go run main.go -o examples/talk6.png -figlet roman -bgHex 0xa23 -fgHex 0x121 Why Integration Tests Might Be Better Than Unit Tests
+6. gophercon23img -o examples/talk6.png -figlet roman -bgHex 0xf66 -fgHex 0x121 Why Integration Tests Might Be Better Than Unit Tests
 ![Example 6](./examples/talk6.png)
 
-7. go run main.go -o examples/talk7.png -figlet 3-d -bgHex 0x423 -fgHex 0xeee Coffee Break
+7. gophercon23img -o examples/talk7.png -figlet 3-d -bgHex 0x423 -fgHex 0xeee Coffee Break
 ![Example 7](./examples/talk7.png)
 
-8. go run main.go -o examples/talk8.png -figlet dotmatrix -bgHex 0x500 -fgHex 0xeee Coffee Break 
+8. gophercon23img -o examples/talk8.png -figlet dotmatrix -bgHex 0x500 -fgHex 0xeee Coffee Break 
 ![Example 8](./examples/talk8.png)
 
-9. go run main.go -o examples/talk9.png -figlet stellar -bgHex 0x121 -fgHex 0xfff Useful Functional-Options Tricks For Better Libraries
+9. gophercon23img -o examples/talk9.png -figlet alligator2 -fgHex 0x121 -bgHex 0xada Useful Functional-Options Tricks For Better Libraries
 ![Example 9](./examples/talk9.png)
 
-10. go run main.go -o examples/talk10.png -figlet speed -fgHex 0xdad GoTime Podcast Live
+10. gophercon23img -o examples/talk10.png -figlet speed -fgHex 0xdad GoTime Podcast Live
 ![Example 10](./examples/talk10.png)
 
 ### Banner Gif
 
-1. go run main.go -o examples/talk.gif -banner Go Beyond the Console: Developing 2D Games With Go
+1. gophercon23img -o examples/talk.gif -banner Go Beyond the Console: Developing 2D Games With Go
 ![Example 1](./examples/talk.gif)
 
-2. go run main.go -o examples/talk2.gif -banner -bgHex 0xada -fgHex 0x121 Why Integration Tests Might Be Better Than Unit Tests
+2. gophercon23img -o examples/talk2.gif -figlet epic -banner -bgHex 0xada -fgHex 0x121 Why Integration Tests Might Be Better Than Unit Tests
 ![Example 2](./examples/talk2.gif)
 
-3. go run main.go -o examples/talk4.gif -figlet cosmic -banner -bgHex 0x044 Reaching the Unix Philosophys Logical Extreme With WebAssembly
+3. gophercon23img -o examples/talk4.gif -figlet cosmic -banner -bgHex 0x044 Reaching the Unix Philosophys Logical Extreme With WebAssembly
 ![Example 3](./examples/talk4.gif)
 
-4. go run main.go -o examples/talk8.gif -figlet smkeyboard -banner -delay 10 Panel With the Go Team
+4. gophercon23img -o examples/talk8.gif -figlet smkeyboard -banner -delay 10 Panel With the Go Team
 ![Example 4](./examples/talk8.gif)
 
 ### Blinking Gif
 
-1. go run main.go -o examples/talk3.gif -figlet roman -blink -bgHex 0xabc -fgHex 0x000 Why Integration Tests Might Be Better Than Unit Tests
+1. gophercon23img -o examples/talk3.gif -figlet roman -blink -bgHex 0xffd364 -fgHex 0x000 Why Integration Tests Might Be Better Than Unit Tests
 ![Example 1](./examples/talk3.gif)
+
+2. gophercon23img -o examples/talk9.gif -figlet speed -blink -bgHex 0xb4d9ef -fgHex 0x284b4b GoTime Podcast Live
+![Example 2](./examples/talk9.gif)
+
+3. gophercon23img -o examples/talk10.gif -blink -delay 125 A Fast Structured Logging Package
+![Example 3](./examples/talk10.gif)
 
 ### Blinking Gif with alternating colors 
 
-1. go run main.go -o examples/talk5.gif -figlet smkeyboard -alt Panel With the Go Team
+1. gophercon23img -o examples/talk5.gif -figlet smkeyboard -alt Panel With the Go Team
 ![Example 1](./examples/talk5.gif)
 
-2. go run main.go -o examples/talk6.gif -figlet computer -alt -bgHex 0xabc -fgHex 0x000 API Optimization Tale: Monitor, Fix and Deploy
+2. gophercon23img -o examples/talk6.gif -figlet computer -alt -bgHex 0xabc -fgHex 0x000 API Optimization Tale: Monitor, Fix and Deploy
 ![Example 2](./examples/talk6.gif)
 
-3. go run main.go -o examples/talk7.gif -figlet isometric3 -alt -delay 150 -bgHex 0x959 -fgHex 0x111 Coffee Break
+3. gophercon23img -o examples/talk7.gif -figlet isometric3 -alt -delay 150 -bgHex 0x959 -fgHex 0x111 Coffee Break
 ![Example 3](./examples/talk7.gif)

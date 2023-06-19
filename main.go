@@ -37,7 +37,7 @@ func main() {
 	flag.Parse()
 
 	asciiArtLines := prepareText(strings.Join(flag.Args(), " "), *figlet)
-	lImg := prepareSide(*l, len(asciiArtLines[0]), 2*10, *fontSize, *xPtFactor)
+	lImg := prepareSide(*l, len(asciiArtLines[0]), 2*30, *fontSize, *xPtFactor)
 	hImg := prepareSide(*h, len(asciiArtLines), 2*30, *fontSize, *yPtFactor)
 
 	switch {
@@ -105,7 +105,7 @@ func makeAlt(asciiArtLines []string, l, h int, bgColorHex, fgColorHex string, fo
 		case 0:
 			bgColor0x, fgColor0x = bgColorHex, fgColorHex // same as params
 		default:
-			bgColor0x, fgColor0x = fgColorHex, bgColorHex // switch colors
+			bgColor0x, fgColor0x = fgColorHex, bgColorHex // switch back and front colors
 		}
 		img, err := setupBG(bgColor0x, l, h)
 		if err != nil {
