@@ -3,21 +3,21 @@ This repo contains a CLI that produces some proposals for images to use during g
 
 ## How to use it
 
-Get it with `go install github.com/mcaci/gopherconeu23img@latest` then run it as `gopherconeu23img $TEXT` to get a first example with the text of your choice.
+Get it with `go install github.com/mcaci/gopherconeu23img@latest` then run it as `gopherconeu23img [flags] text` to get a first example with the text of your choice.
 
 There are some flags that can be used to customize the image that is produced.
 
 This is the flag list:
 
 - bgHex: this flag gets a string in the form of "0x" followed by 3 or 6 hexadecimal digits. The value is used to select the color of the background.
-- l: this flag is just the width of the image. It's an integer.
-- h: this flag is just the height of the image. It's an integer.
 - fgHex: this flag gets a string in the form of "0x" followed by 3 or 6 hexadecimal digits. The value is used to select the color of the text in the foreground.
+- h: this flag is just the height of the image. It's an integer.
+- l: this flag is just the width of the image. It's an integer.
+- o: name of the output image
 - fontPath: path for the font to use to draw the text in the foreground. It should be a path to a valid TrueType font.
 - fontSize: size of the font to use to draw the text in the foreground.
 - xPtFactor: this number is a factor used to determine the width of the character box for each character. It is used to adjust the alignment of each character of the ASCII art text drawn.
 - yPtFactor: this number is a factor used to determine the height of the character box for each character. It is used to adjust the alignment of each character of the ASCII art text drawn.
-- o: name of the output image
 - figlet: name of the figlet font: figlets are fonts used to convert text into ASCII art. See https://github.com/common-nighthawk/go-figure/tree/master/fonts for the possible values and http://www.figlet.org/examples.html to see examples of what are the effects of these fonts.
 - banner: if set to true it will produce a gif of a banner that shows the text sliding on the background, if false it will produce a png.
 - blink: if set to true it will produce a gif of the text blinking on the background, if false it will produce a png.
@@ -87,11 +87,17 @@ Here are some examples with the commands run to create them:
 
 ### Blinking Gif with alternating colors 
 
-1. gophercon23img -o examples/talk5.gif -figlet smkeyboard -alt Panel With the Go Team
+1. gophercon23img -o examples/talk5.gif -figlet smkeyboard -alt -bgHex 0x00ADD8 -fgHex 0xFFF Panel With the Go Team
 ![Example 1](./examples/talk5.gif)
 
-2. gophercon23img -o examples/talk6.gif -figlet computer -alt -bgHex 0xabc -fgHex 0x000 API Optimization Tale: Monitor, Fix and Deploy
+2. gophercon23img -o examples/talk6.gif -figlet computer -alt -delay 85 -bgHex 0x78C475 -fgHex 0x030303 API Optimization Tale: Monitor, Fix and Deploy
 ![Example 2](./examples/talk6.gif)
 
-3. gophercon23img -o examples/talk7.gif -figlet isometric3 -alt -delay 150 -bgHex 0x959 -fgHex 0x111 Coffee Break
+3. gophercon23img -o examples/talk7.gif -figlet isometric3 -alt -delay 150 -bgHex 0xffbeda -fgHex 0x000 Coffee Break
 ![Example 3](./examples/talk7.gif)
+
+4. gophercon23img -o examples/talk11.gif -figlet banner3-D -alt -bgHex 0x5DC9E2 -fgHex 0xCE3262 -delay 125 Keynote - State of the Go Nation
+![Example 4](./examples/talk11.gif)
+
+5. gophercon23img -o examples/talk12.gif -figlet contrast -alt How To Avoid Breaking Changes in Your Go Modules
+![Example 5](./examples/talk12.gif)

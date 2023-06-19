@@ -18,9 +18,11 @@ go run main.go -o examples/talk.gif -banner Go Beyond the Console: Developing 2D
 go run main.go -o examples/talk2.gif -figlet epic -banner -bgHex 0xada -fgHex 0x121 Why Integration Tests Might Be Better Than Unit Tests
 go run main.go -o examples/talk3.gif -figlet roman -blink -bgHex 0xffd364 -fgHex 0x000 Why Integration Tests Might Be Better Than Unit Tests
 go run main.go -o examples/talk4.gif -figlet cosmic -banner -bgHex 0x044 Reaching the Unix Philosophys Logical Extreme With WebAssembly
-go run main.go -o examples/talk5.gif -figlet smkeyboard -alt Panel With the Go Team
-go run main.go -o examples/talk6.gif -figlet computer -alt -delay 75 -bgHex 0xabc -fgHex 0x000 API Optimization Tale: Monitor, Fix and Deploy
-go run main.go -o examples/talk7.gif -figlet isometric3 -alt -delay 150 -bgHex 0x959 -fgHex 0x111 Coffee Break
+go run main.go -o examples/talk5.gif -figlet smkeyboard -alt -bgHex 0x00ADD8 -fgHex 0xFFF Panel With the Go Team
+go run main.go -o examples/talk6.gif -figlet computer -alt -delay 85 -bgHex 0x78C475 -fgHex 0x030303 API Optimization Tale: Monitor, Fix and Deploy
+go run main.go -o examples/talk7.gif -figlet isometric3 -alt -delay 150 -bgHex 0xffbeda -fgHex 0x000 Coffee Break
 go run main.go -o examples/talk8.gif -figlet smkeyboard -banner -delay 10 Panel With the Go Team
 go run main.go -o examples/talk9.gif -figlet speed -blink -bgHex 0xb4d9ef -fgHex 0x284b4b GoTime Podcast Live
 go run main.go -o examples/talk10.gif -blink -delay 125 A Fast Structured Logging Package
+go run main.go -o examples/talk11.gif -figlet banner3-D -alt -bgHex 0x5DC9E2 -fgHex 0xCE3262 -delay 125 Keynote - State of the Go Nation
+go run main.go -o examples/talk12.gif -figlet contrast -alt How To Avoid Breaking Changes in Your Go Modules
