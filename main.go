@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"image"
@@ -16,12 +17,14 @@ import (
 	"github.com/common-nighthawk/go-figure"
 	"github.com/golang/freetype"
 	"golang.org/x/image/font"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func main() {
 	l := flag.Int("l", 0, "Length of the image")
 	h := flag.Int("h", 0, "Height of the image")
-	path := flag.String("o", "examples/text.png", "path of the output image/gif")
+	path := flag.String("o", "", "path of the output image/gif")
 	bgColorHex := flag.String("bgHex", "0x4d3178", "Hexadecimal value for the background color")
 	fgColorHex := flag.String("fgHex", "0xabc", "Hexadecimal value for the color of the text")
 	fontPath := flag.String("fontPath", "fonts/Ubuntu-R.ttf", "path of the font to use")
@@ -33,34 +36,79 @@ func main() {
 	blink := flag.Bool("blink", false, "if true it's a plain blinking gif, else it's a picture")
 	alt := flag.Bool("alt", false, "if true it's a alternating colors blinking gif, else it's a picture")
 	delay := flag.Int("delay", 0, "used with '-banner, '-blink' or '-alt', it indicates the delay between each frame of the gif")
+	inFile := flag.String("inputFile", "", "Experimental: path of the file containing a list of strings for which to create the image/gif")
 
 	flag.Parse()
 
-	asciiArtLines := prepareText(strings.Join(flag.Args(), " "), *figlet)
+	if *inFile != "" {
+		f, _ := os.Open(*inFile)
+		s := bufio.NewScanner(f)
+		// s.Split(bufio.ScanLines)
+		const n = 24
+		var i int
+		for s.Scan() {
+			text := s.Text()
+			asciiArtLines := prepareText(text, *figlet)
+
+			text = cases.Title(language.English).String(text)
+			path := defaultOutFile(text)
+			log.Printf("%d/%d Working on %s", i, n, text)
+			i++
+
+			lImg := prepareSide(*l, len(asciiArtLines[0]), 2*30, *fontSize, *xPtFactor)
+			hImg := prepareSide(*h, len(asciiArtLines), 2*30, *fontSize, *yPtFactor)
+			switch {
+			case *banner:
+				images := makeBanner(asciiArtLines, lImg, hImg, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+				writeGif(images, path+".gif", *delay, 5)
+			case *blink:
+				images := makeBlink(asciiArtLines, lImg, hImg, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+				writeGif(images, path+".gif", *delay, 75)
+			case *alt:
+				images := makeAlt(asciiArtLines, lImg, hImg, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+				writeGif(images, path+".gif", *delay, 100)
+			default:
+				image := makePng(asciiArtLines, lImg, hImg, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
+				writePng(image, path+".png")
+			}
+		}
+		return
+	}
+
+	text := strings.Join(flag.Args(), " ")
+	outPath := *path
+	if *path == "" {
+		outPath = defaultOutFile(text)
+	}
+	asciiArtLines := prepareText(text, *figlet)
 	lImg := prepareSide(*l, len(asciiArtLines[0]), 2*30, *fontSize, *xPtFactor)
 	hImg := prepareSide(*h, len(asciiArtLines), 2*30, *fontSize, *yPtFactor)
-
 	switch {
 	case *banner:
 		images := makeBanner(asciiArtLines, lImg, hImg, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
-		writeGif(images, *path, *delay, 5)
+		writeGif(images, outPath+".gif", *delay, 10)
 	case *blink:
 		images := makeBlink(asciiArtLines, lImg, hImg, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
-		writeGif(images, *path, *delay, 75)
+		writeGif(images, outPath+".gif", *delay, 75)
 	case *alt:
 		images := makeAlt(asciiArtLines, lImg, hImg, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
-		writeGif(images, *path, *delay, 100)
+		writeGif(images, outPath+".gif", *delay, 100)
 	default:
 		image := makePng(asciiArtLines, lImg, hImg, *bgColorHex, *fgColorHex, *fontPath, *fontSize, *xPtFactor, *yPtFactor)
-		writePng(image, *path)
+		writePng(image, outPath+".png")
 	}
+}
+
+func defaultOutFile(text string) string {
+	text = cases.Title(language.English).String(text)
+	return "out/" + strings.Replace(text, " ", "", -1)
 }
 
 func makeBanner(asciiArtLines []string, l, h int, bgColorHex, fgColorHex string, fontPath string, fontSize, xPtFactor, yPtFactor float64) []*image.Paletted {
 	d := int(float64(l) / fontSize)
 	nFrames := len(asciiArtLines[0])
 	var images []*image.Paletted
-	for i := 0; i < nFrames; i++ {
+	for i := 0; i < nFrames; i += 2 {
 		img, err := setupBG(bgColorHex, l/2, h)
 		if err != nil {
 			log.Fatal(err)
@@ -220,7 +268,7 @@ func drawFG(lines []string, s, e int, bg draw.Image, fgHex, fontPath string, fon
 		case s < e && e >= len(line):
 			line = line[s:]
 		}
-		log.Print(line)
+		// log.Print(line)
 		startX := pt.X
 		for _, char := range line {
 			_, err := c.DrawString(string(char), pt)
